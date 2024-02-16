@@ -1,0 +1,15 @@
+{application, nova_oidcc, [
+    {description, "An OTP library"},
+    {vsn, git},
+    {registered, []},
+    {applications, [
+        kernel,
+        stdlib,
+        oidcc
+    ]},
+    {env, []},
+    {modules, []},
+
+    {licenses, ["Apache 2.0"]},
+    {links, []}
+]}.

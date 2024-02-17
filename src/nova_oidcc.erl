@@ -104,7 +104,6 @@ validate_jwt_token(#{oidcc_extract_authorization := Token} = Req) ->
         client_id := ClientId,
         client_secret := ClientSecret
     } =
-        Opts =
         case application:get_env(nova_oidcc, oidcc_introspect_token) of
             {ok,
                 #{
@@ -133,5 +132,3 @@ validate_jwt_token(#{oidcc_extract_authorization := Token} = Req) ->
     end;
 validate_jwt_token(#{}) ->
     erlang:error(no_oidcc_cowboy_extract_authorization).
-
-

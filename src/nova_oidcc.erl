@@ -1,8 +1,14 @@
 -module(nova_oidcc).
 
 -export([load_user_info/1]).
+-export([get/3]).
+-export([put/4]).
 
 -include_lib("oidcc/include/oidcc_token_introspection.hrl").
+
+get(_Type, _Token, _Req) -> miss.
+
+put(_Type, _Token, _Data, _Req) -> ok.
 
 load_user_info(#{oidcc_extract_authorization := undefined}) ->
     false;

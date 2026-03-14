@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   ci:
     uses: Taure/erlang-ci/.github/workflows/ci.yml@v1
@@ -18,6 +21,4 @@ jobs:
     needs: ci
     if: github.event_name == 'push'
     uses: Taure/erlang-ci/.github/workflows/release.yml@v1
-    permissions:
-      contents: write
     secrets: inherit

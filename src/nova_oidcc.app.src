@@ -1,0 +1,10 @@
+{application, nova_oidcc, [
+    {description, "OpenID Connect integration for Nova"},
+    {vsn, "git"},
+    {registered, []},
+    {applications, [kernel, stdlib, nova, oidcc]},
+    {env, []},
+    {modules, []},
+    {licenses, ["MIT"]},
+    {links, [{"GitHub", "https://github.com/novaframework/nova_oidcc"}]}
+]}.

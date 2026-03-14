@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  contents: write
-
 jobs:
   ci:
     uses: Taure/erlang-ci/.github/workflows/ci.yml@v1
@@ -16,9 +13,3 @@ jobs:
       otp-version: '28'
       rebar3-version: '3.24'
       enable-ex-doc: true
-
-  release:
-    needs: ci
-    if: github.event_name == 'push'
-    uses: Taure/erlang-ci/.github/workflows/release.yml@v1
-    secrets: inherit

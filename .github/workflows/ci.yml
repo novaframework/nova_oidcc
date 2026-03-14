@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: Taure/erlang-ci/.github/workflows/ci.yml@v1
+    with:
+      otp-version: '28'
+      rebar3-version: '3.24'
+      enable-ex-doc: true
+
+  release:
+    needs: ci
+    if: github.event_name == 'push'
+    uses: Taure/erlang-ci/.github/workflows/release.yml@v1
+    permissions:
+      contents: write
+    secrets: inherit

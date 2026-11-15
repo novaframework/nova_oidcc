@@ -10,9 +10,9 @@ Add to route group plugins:
 #{
     prefix => "/protected",
     plugins => [
-        {pre_request, [{nova_oidcc_plugin, #{
+        {pre_request, nova_oidcc_plugin, #{
             on_unauthorized => {redirect, <<"/auth/google/login">>}
-        }}]}
+        }}
     ],
     routes => [...]
 }

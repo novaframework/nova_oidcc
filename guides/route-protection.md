@@ -31,9 +31,9 @@ routes(_Env) ->
         #{
             prefix => "/dashboard",
             plugins => [
-                {pre_request, [{nova_oidcc_plugin, #{
+                {pre_request, nova_oidcc_plugin, #{
                     on_unauthorized => {redirect, <<"/auth/google/login">>}
-                }}]}
+                }}
             ],
             routes => [
                 {"/", fun dashboard_controller:index/1, #{}},
@@ -55,7 +55,7 @@ routes(_Env) ->
 The default behavior redirects unauthenticated users to the login page:
 
 ```erlang
-{nova_oidcc_plugin, #{
+{pre_request, nova_oidcc_plugin, #{
     on_unauthorized => {redirect, <<"/auth/google/login">>}
 }}
 ```
@@ -65,7 +65,7 @@ The default behavior redirects unauthenticated users to the login page:
 For JSON APIs, return a 401 status instead of redirecting:
 
 ```erlang
-{nova_oidcc_plugin, #{
+{pre_request, nova_oidcc_plugin, #{
     on_unauthorized => {status, 401}
 }}
 ```
@@ -119,9 +119,9 @@ routes(_Env) ->
         #{
             prefix => "/api/v1",
             plugins => [
-                {pre_request, [{nova_oidcc_plugin, #{
+                {pre_request, nova_oidcc_plugin, #{
                     on_unauthorized => {status, 401}
-                }}]}
+                }}
             ],
             routes => [
                 {"/me", fun api_controller:me/1, #{}},
@@ -132,9 +132,9 @@ routes(_Env) ->
         #{
             prefix => "/app",
             plugins => [
-                {pre_request, [{nova_oidcc_plugin, #{
+                {pre_request, nova_oidcc_plugin, #{
                     on_unauthorized => {redirect, <<"/auth/google/login">>}
-                }}]}
+                }}
             ],
             routes => [
                 {"/", fun app_controller:index/1, #{}}

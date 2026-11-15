@@ -14,6 +14,10 @@ Handles the login redirect and OAuth callback endpoints.
 
 -export([login/1, callback/1]).
 
+-ifdef(TEST).
+-export([signed_in/3]).
+-endif.
+
 -doc """
 Initiate OIDC login by redirecting to the provider's authorization endpoint.
 
@@ -63,7 +67,9 @@ login(Req = #{bindings := #{provider := ProviderBin}}) ->
 Handle the OAuth callback after the user authenticates with the provider.
 
 Exchanges the authorization code for tokens, retrieves user info,
-stores the user in the session, and redirects to the success URL.
+signs the user in, and redirects to the success URL with the request that
+carries the session of the user. On a Nova whose `nova_session` module has
+`sign_in` the client is moved to a new session id at that point.
 """.
 -spec callback(map()) -> term().
 callback(Req = #{bindings := #{provider := ProviderBin}}) ->
@@ -103,27 +109,48 @@ handle_code(Req, Provider, Code) ->
                 retrieve_token_and_userinfo(ProviderWorker, ClientId, ClientSecret, Code, TokenOpts)
             of
                 {ok, Token, Userinfo} ->
-                    %% Clean up auth state from session
-                    nova_session:delete(Req, <<"oidcc_nonce">>),
-                    nova_session:delete(Req, <<"oidcc_pkce">>),
-                    nova_session:delete(Req, <<"oidcc_provider">>),
-
-                    %% Store user in session (serialize to binary for nova_session)
-                    ok = nova_session:set(Req, <<"oidcc_user">>, term_to_binary(Userinfo)),
-                    ok = nova_session:set(
-                        Req, <<"oidcc_token">>, term_to_binary(token_to_map(Token))
-                    ),
-
-                    %% Redirect to success URL
-                    case application:get_env(nova_oidcc, on_success, {redirect, <<"/">>}) of
-                        {redirect, Url} -> {redirect, Url};
-                        _ -> {redirect, <<"/">>}
-                    end;
+                    signed_in(Req, Token, Userinfo);
                 {error, Reason} ->
                     handle_failure(Req, Reason)
             end;
         {error, not_found} ->
             {status, 404, #{}, <<"Unknown provider">>}
+    end.
+
+-spec signed_in(map(), tuple(), map()) ->
+    {redirect, term(), map()}.
+signed_in(Req, Token, Userinfo) ->
+    %% Clean up auth state from session
+    nova_session:delete(Req, <<"oidcc_nonce">>),
+    nova_session:delete(Req, <<"oidcc_pkce">>),
+    nova_session:delete(Req, <<"oidcc_provider">>),
+
+    %% Sign the user in (serialize to binary for nova_session)
+    {ok, SignedIn} = sign_in(nova_session, Req, term_to_binary(Userinfo)),
+    ok = nova_session:set(
+        SignedIn, <<"oidcc_token">>, term_to_binary(token_to_map(Token))
+    ),
+
+    %% Redirect to success URL
+    case application:get_env(nova_oidcc, on_success, {redirect, <<"/">>}) of
+        {redirect, Url} -> {redirect, Url, SignedIn};
+        _ -> {redirect, <<"/">>, SignedIn}
+    end.
+
+%% nova_session:sign_in/3 is not in every Nova this library builds against,
+%% so it is called through a variable: a literal call is an undefined
+%% function to xref and dialyzer there.
+-spec sign_in(module(), map(), binary()) -> {ok, map()} | {error, atom()}.
+sign_in(Session, Req, User) ->
+    _ = code:ensure_loaded(Session),
+    case erlang:function_exported(Session, sign_in, 3) of
+        true ->
+            Session:sign_in(Req, ~"oidcc_user", User);
+        false ->
+            case nova_session:set(Req, ~"oidcc_user", User) of
+                ok -> {ok, Req};
+                {error, _Reason} = Error -> Error
+            end
     end.
 
 retrieve_token_and_userinfo(ProviderWorker, ClientId, ClientSecret, Code, TokenOpts) ->

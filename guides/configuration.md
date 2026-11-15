@@ -157,3 +157,5 @@ Nova OIDCC stores authentication state in Nova's session system (ETS by default)
 | `oidcc_token` | After successful auth | Serialized token data |
 
 The `oidcc_nonce`, `oidcc_pkce`, and `oidcc_provider` keys are cleaned up after callback processing.
+
+On a Nova whose `nova_session` module has `sign_in`, the callback signs the user in through it: the client is moved to a new session id, and nothing the session held before the login is carried over.

@@ -43,6 +43,8 @@ routes(_Env) ->
     ].
 ```
 
+On a Nova that has the `pre_security/4` plugin callback the plugin checks the session there, ahead of the security callback of the route group. On an earlier Nova it checks in `pre_request/4`. A request without a user is answered by the plugin and does not reach the controller.
+
 ## Plugin Options
 
 | Option | Type | Default | Description |

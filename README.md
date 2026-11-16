@@ -81,9 +81,9 @@ Add the plugin to any route group that requires authentication:
 #{
     prefix => "/dashboard",
     plugins => [
-        {pre_request, [{nova_oidcc_plugin, #{
+        {pre_request, nova_oidcc_plugin, #{
             on_unauthorized => {redirect, <<"/auth/google/login">>}
-        }}]}
+        }}
     ],
     routes => [
         {"/", fun dashboard_controller:index/1, #{}}
